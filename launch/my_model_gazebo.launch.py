@@ -7,7 +7,7 @@ from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, ExecuteProcess
 
 
 def generate_launch_description():
@@ -93,6 +93,18 @@ def generate_launch_description():
             {'use_sim_time': True},
         ]
     )
+    
+    # load_joint_state_broadcaster = ExecuteProcess(
+    #     cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+    #          'joint_state_broadcaster'],
+    #     output='screen'
+    # )
+
+    # load_joint_trajectory_controller = ExecuteProcess(
+    #     cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'effort_controller'],
+    #     output='screen'
+    # )
+    
 
     static_transform = Node(
         package="tf2_ros",
@@ -117,10 +129,12 @@ def generate_launch_description():
     ld.add_action(declare_world_cmd)
     ld.add_action(gzserver)
     ld.add_action(gzclient)
-    ld.add_action(gazebo_spawn_entity)
-    ld.add_action(robot_state_publisher_node)
-    ld.add_action(joint_state_broadcaster_node)
-    ld.add_action(joint_trajectory_controller_node)
+    # ld.add_action(gazebo_spawn_entity)
+    # ld.add_action(robot_state_publisher_node)
+    # ld.add_action(load_joint_state_broadcaster)
+    # ld.add_action(load_joint_trajectory_controller)
+    # ld.add_action(joint_state_broadcaster_node)
+    # ld.add_action(joint_trajectory_controller_node)
     # ld.add_action(static_transform)
 
     return ld
