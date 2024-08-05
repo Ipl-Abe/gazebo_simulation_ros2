@@ -129,12 +129,12 @@ def generate_launch_description():
     ld.add_action(declare_world_cmd)
     ld.add_action(gzserver)
     ld.add_action(gzclient)
-    # ld.add_action(gazebo_spawn_entity)
-    # ld.add_action(robot_state_publisher_node)
+    ld.add_action(gazebo_spawn_entity)
+    ld.add_action(robot_state_publisher_node)
     # ld.add_action(load_joint_state_broadcaster)
     # ld.add_action(load_joint_trajectory_controller)
-    # ld.add_action(joint_state_broadcaster_node)
-    # ld.add_action(joint_trajectory_controller_node)
+    ld.add_action(joint_state_broadcaster_node)
+    ld.add_action(joint_trajectory_controller_node)
     # ld.add_action(static_transform)
 
     return ld
