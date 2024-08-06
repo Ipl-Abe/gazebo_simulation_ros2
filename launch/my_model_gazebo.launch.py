@@ -7,7 +7,13 @@ from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import Command, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, ExecuteProcess
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, ExecuteProcess, RegisterEventHandler
+from launch.event_handlers import OnProcessExit
+
+from launch_ros.actions import Node
+
+
+import xacro
 
 
 def generate_launch_description():
@@ -64,6 +70,10 @@ def generate_launch_description():
         ],
         output="screen",
     )
+    
+    doc = xacro.parse(open(robot_xacro_file))
+    xacro.process_doc(doc)
+    params = {'robot_description': doc.toxml()}
 
 
     robot_state_publisher_node = Node(
@@ -71,7 +81,7 @@ def generate_launch_description():
         executable='robot_state_publisher',
         output='screen',
         parameters=[
-            {'robot_description': robot_description_path},
+            params,
             {'use_sim_time': True},
         ]
     )
@@ -94,16 +104,16 @@ def generate_launch_description():
         ]
     )
     
-    # load_joint_state_broadcaster = ExecuteProcess(
-    #     cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
-    #          'joint_state_broadcaster'],
-    #     output='screen'
-    # )
+    load_joint_state_broadcaster = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active',
+             'joint_state_broadcaster'],
+        output='screen'
+    )
 
-    # load_joint_trajectory_controller = ExecuteProcess(
-    #     cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'effort_controller'],
-    #     output='screen'
-    # )
+    load_joint_trajectory_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'arm_controller'],
+        output='screen'
+    )
     
 
     static_transform = Node(
@@ -123,18 +133,37 @@ def generate_launch_description():
         ]
     )
     
-    ld = LaunchDescription()
+    ld = LaunchDescription([
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=gazebo_spawn_entity,
+                on_exit=[load_joint_state_broadcaster],
+            )
+        ),
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=load_joint_state_broadcaster,
+                on_exit=[load_joint_trajectory_controller],
+            )
+        ),
+        # declare_use_sim_time_cmd,
+        # declare_world_cmd,
+        gzserver,
+        gzclient,
+        gazebo_spawn_entity,
+        robot_state_publisher_node
+    ])
 
-    ld.add_action(declare_use_sim_time_cmd)
-    ld.add_action(declare_world_cmd)
-    ld.add_action(gzserver)
-    ld.add_action(gzclient)
-    ld.add_action(gazebo_spawn_entity)
-    ld.add_action(robot_state_publisher_node)
-    # ld.add_action(load_joint_state_broadcaster)
-    # ld.add_action(load_joint_trajectory_controller)
-    ld.add_action(joint_state_broadcaster_node)
-    ld.add_action(joint_trajectory_controller_node)
+    # ld.add_action(declare_use_sim_time_cmd)
+    # ld.add_action(declare_world_cmd)
+    # ld.add_action(gzserver)
+    # ld.add_action(gzclient)
+    # ld.add_action(gazebo_spawn_entity)
+    # ld.add_action(robot_state_publisher_node)
+ 
+ 
+    # ld.add_action(joint_state_broadcaster_node)
+    # ld.add_action(joint_trajectory_controller_node)
     # ld.add_action(static_transform)
 
     return ld
