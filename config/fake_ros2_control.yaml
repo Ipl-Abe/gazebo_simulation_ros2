@@ -36,5 +36,5 @@ arm_controller:
     state_interfaces:
       - position
       - velocity
-    state_publish_rate: 50
+    # state_publish_rate: 50
     action_monitor_rate: 20.0
