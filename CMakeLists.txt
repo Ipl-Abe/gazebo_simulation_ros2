@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 project(gazebo_simulation_ros2)
 
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 
 install(DIRECTORY config launch urdf world models
   DESTINATION share/${PROJECT_NAME}
@@ -12,5 +13,11 @@ install(DIRECTORY config launch urdf world models
 
 #  ament_add_pytest_test(description test/test_description.py)
 #endif()
+
+# Install Python executables
+install(PROGRAMS 
+  scripts/slider_control.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 ament_package()
