@@ -5,10 +5,11 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import Command, PathJoinSubstitution
+from launch.substitutions import Command, PathJoinSubstitution, LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, ExecuteProcess, RegisterEventHandler
 from launch.event_handlers import OnProcessExit
+from launch.conditions import IfCondition
 
 from launch_ros.actions import Node
 
@@ -18,8 +19,9 @@ import xacro
 
 def generate_launch_description():
     mycobot_description_share_path = os.path.join(get_package_share_directory('gazebo_simulation_ros2'))
-
     world_path = PathJoinSubstitution([FindPackageShare("gazebo_simulation_ros2"), "world", "my_world.world"])
+
+    use_hardware = LaunchConfiguration('use_hardware')
 
     declare_use_sim_time_cmd = DeclareLaunchArgument(
         name='use_sim_time',
@@ -31,9 +33,15 @@ def generate_launch_description():
         name='world',
         default_value=world_path,
         description='Full path to the world model file to load')
+    
+    declare_use_hardware_cmd = DeclareLaunchArgument(
+        name='use_hardware',
+        default_value='true',
+        description='use myCobot hardware'
+    )
+        
 
-    robot_xacro_file = os.path.join(mycobot_description_share_path, 'urdf', 'mycobot_280_m5.urdf.xacro')
-    robot_description_path = Command(['xacro ', robot_xacro_file])
+    robot_xacro_file = os.path.join(mycobot_description_share_path, 'urdf', 'mycobot_280_m5_gazebo_config.xacro')
 
     # Gazebo Node
     spawn_x_val = '0.0'
@@ -115,6 +123,29 @@ def generate_launch_description():
         output='screen'
     )
     
+    mycobot_hardware_interface_node = Node(
+        package='gazebo_simulation_ros2',
+        executable='slider_control.py',
+        condition=IfCondition(use_hardware),
+        output='screen',
+        parameters=[
+            params,
+            {'use_sim_time': True},
+        ]
+    )
+    
+    rqt_joint_trajectory_controller_node = Node(
+        package='rqt_joint_trajectory_controller',
+        executable='rqt_joint_trajectory_controller',
+        condition=IfCondition(use_hardware),
+        output='screen',
+        parameters=[
+            params,
+            {'use_sim_time': True},
+        ]
+    )
+    
+    
 
     static_transform = Node(
         package="tf2_ros",
@@ -134,6 +165,9 @@ def generate_launch_description():
     )
     
     ld = LaunchDescription([
+        declare_use_sim_time_cmd,
+        declare_world_cmd,
+        declare_use_hardware_cmd,
         RegisterEventHandler(
             event_handler=OnProcessExit(
                 target_action=gazebo_spawn_entity,
@@ -151,7 +185,9 @@ def generate_launch_description():
         gzserver,
         gzclient,
         gazebo_spawn_entity,
-        robot_state_publisher_node
+        robot_state_publisher_node,
+        mycobot_hardware_interface_node,
+        rqt_joint_trajectory_controller_node
     ])
 
     # ld.add_action(declare_use_sim_time_cmd)
