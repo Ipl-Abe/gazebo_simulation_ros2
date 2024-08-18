@@ -62,6 +62,10 @@ def generate_launch_description():
     gzclient = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(gazebo_ros_share_directory, 'launch', 'gzclient.launch.py'))
     )
+    
+    doc = xacro.parse(open(robot_xacro_file))
+    xacro.process_doc(doc)
+    params = {'robot_description': doc.toxml()}
 
     gazebo_spawn_entity = Node(
         package="gazebo_ros",
@@ -79,10 +83,6 @@ def generate_launch_description():
         output="screen",
     )
     
-    doc = xacro.parse(open(robot_xacro_file))
-    xacro.process_doc(doc)
-    params = {'robot_description': doc.toxml()}
-
 
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
@@ -168,26 +168,26 @@ def generate_launch_description():
         declare_use_sim_time_cmd,
         declare_world_cmd,
         declare_use_hardware_cmd,
-        RegisterEventHandler(
-            event_handler=OnProcessExit(
-                target_action=gazebo_spawn_entity,
-                on_exit=[load_joint_state_broadcaster],
-            )
-        ),
-        RegisterEventHandler(
-            event_handler=OnProcessExit(
-                target_action=load_joint_state_broadcaster,
-                on_exit=[load_joint_trajectory_controller],
-            )
-        ),
+        # RegisterEventHandler(
+        #     event_handler=OnProcessExit(
+        #         target_action=gazebo_spawn_entity,
+        #         on_exit=[load_joint_state_broadcaster],
+        #     )
+        # ),
+        # RegisterEventHandler(
+        #     event_handler=OnProcessExit(
+        #         target_action=load_joint_state_broadcaster,
+        #         on_exit=[load_joint_trajectory_controller],
+        #     )
+        # ),
         # declare_use_sim_time_cmd,
         # declare_world_cmd,
         gzserver,
         gzclient,
         gazebo_spawn_entity,
         robot_state_publisher_node,
-        mycobot_hardware_interface_node,
-        rqt_joint_trajectory_controller_node
+        # mycobot_hardware_interface_node,
+        # rqt_joint_trajectory_controller_node
     ])
 
     # ld.add_action(declare_use_sim_time_cmd)

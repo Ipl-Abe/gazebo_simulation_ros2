@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
 <robot  xmlns:xacro="http://www.ros.org/wiki/xacro" name="mycobot_ai_no" >
 
+  <!-- <xacro:include filename="$(find gazebo_simulation_ros2)/urdf/mycobot.trans" /> -->
   <xacro:include filename="$(find gazebo_simulation_ros2)/urdf/mycobot_280_m5.urdf.xacro" />
+
 
   <ros2_control name="GazeboSystem" type="system">
     <hardware>
@@ -9,7 +11,7 @@
     </hardware>
     <joint name="joint1">
       <command_interface name="position">
-        <param name="min">-3.15</param>
+        <param name="min">-3.14</param>
         <param name="max">3.14</param>
       </command_interface>
       <state_interface name="position">
@@ -78,7 +80,9 @@
 
     <gazebo>
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-      <parameters>$(find gazebo_simulation_ros2)/config/fake_ros2_control.yaml</parameters>
+      <robot_param>robot_description</robot_param>
+      <robot_param_node>robot_state_publisher</robot_param_node>
+      <parameters>$(find gazebo_simulation_ros2)/config/mycobot_move_group_controller.yaml</parameters>
     </plugin>
   </gazebo>
 

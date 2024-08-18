@@ -3,7 +3,6 @@
 
   <xacro:property name="width" value=".2" />
 
-
   <link name="link1">
     <inertial>
     <origin xyz="0 0 0.1" rpy="0 0 0"/>
