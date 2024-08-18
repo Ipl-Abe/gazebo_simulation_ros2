@@ -35,6 +35,8 @@ def generate_launch_description():
     mycobot_description_share_path = os.path.join(get_package_share_directory('gazebo_simulation_ros2'))
     world_path = PathJoinSubstitution([FindPackageShare("gazebo_simulation_ros2"), "world", "my_world.world"])
 
+    use_hardware = LaunchConfiguration('use_hardware')
+
     declare_use_sim_time_cmd = DeclareLaunchArgument(
         name='use_sim_time',
         default_value='true',
@@ -48,7 +50,7 @@ def generate_launch_description():
     
     declare_use_hardware_cmd = DeclareLaunchArgument(
         name='use_hardware',
-        default_value='true',
+        default_value='false',
         description='use myCobot hardware'
     )
     
@@ -203,6 +205,18 @@ def generate_launch_description():
         ],
         condition=UnlessCondition(load_RVIZfile),
     )
+    
+    # mycobot hardware
+    mycobot_hardware_interface_node = Node(
+        package='gazebo_simulation_ros2',
+        executable='slider_control.py',
+        condition=IfCondition(use_hardware),
+        output='screen',
+        parameters=[
+            robot_description,
+            {'use_sim_time': True},
+        ]
+    )
 
     ld = LaunchDescription([
         declare_use_sim_time_cmd,
@@ -235,7 +249,8 @@ def generate_launch_description():
                         actions=[
                             rviz_arg,
                             rviz_node_full,
-                            run_move_group_node
+                            run_move_group_node,
+                            mycobot_hardware_interface_node
                         ]
                     ),
                 ]
