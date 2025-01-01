@@ -168,18 +168,18 @@ def generate_launch_description():
         declare_use_sim_time_cmd,
         declare_world_cmd,
         declare_use_hardware_cmd,
-        # RegisterEventHandler(
-        #     event_handler=OnProcessExit(
-        #         target_action=gazebo_spawn_entity,
-        #         on_exit=[load_joint_state_broadcaster],
-        #     )
-        # ),
-        # RegisterEventHandler(
-        #     event_handler=OnProcessExit(
-        #         target_action=load_joint_state_broadcaster,
-        #         on_exit=[load_joint_trajectory_controller],
-        #     )
-        # ),
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=gazebo_spawn_entity,
+                on_exit=[load_joint_state_broadcaster],
+            )
+        ),
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=load_joint_state_broadcaster,
+                on_exit=[load_joint_trajectory_controller],
+            )
+        ),
         # declare_use_sim_time_cmd,
         # declare_world_cmd,
         gzserver,
